@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  wordpress-saas-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wordpress-saas-dashboard
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+      - VITE_APP_ENV=production
+      # Supabase Configuration (to be set in Coolify)
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+      - VITE_SUPABASE_SERVICE_ROLE_KEY=${VITE_SUPABASE_SERVICE_ROLE_KEY}
+      # WordPress Configuration (to be set in Coolify)
+      - VITE_WORDPRESS_EINSOF7_URL=${VITE_WORDPRESS_EINSOF7_URL}
+      - VITE_WORDPRESS_EINSOF7_USERNAME=${VITE_WORDPRESS_EINSOF7_USERNAME}
+      - VITE_WORDPRESS_EINSOF7_PASSWORD=${VITE_WORDPRESS_EINSOF7_PASSWORD}
+      - VITE_WORDPRESS_OPTEMIL_URL=${VITE_WORDPRESS_OPTEMIL_URL}
+      - VITE_WORDPRESS_OPTEMIL_USERNAME=${VITE_WORDPRESS_OPTEMIL_USERNAME}
+      - VITE_WORDPRESS_OPTEMIL_PASSWORD=${VITE_WORDPRESS_OPTEMIL_PASSWORD}
+    labels:
+      # Coolify labels
+      - "coolify.managed=true"
+      - "coolify.version=latest"
+      - "coolify.name=wordpress-saas-dashboard"
+      - "coolify.type=application"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - coolify
+
+networks:
+  coolify:
+    external: true

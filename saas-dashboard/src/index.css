@@ -1,0 +1,6 @@
+/**
+ * @fileoverview Main CSS entry point importing global styles
+ * @module index.css
+ */
+
+@import './styles/globals.css';
