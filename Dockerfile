@@ -1,44 +1,43 @@
 # WordPress SaaS Dashboard - Production Dockerfile
-FROM node:18-alpine AS base
+FROM node:20-alpine AS dependencies
 
-# Install dependencies only when needed
-FROM base AS deps
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+# Install system dependencies
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
-RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
+# Copy package files
+COPY package.json package-lock.json* ./
 
+# Install all dependencies (including dev dependencies for build)
+RUN npm ci --ignore-scripts --prefer-offline --no-audit
 
-# Rebuild the source code only when needed
-FROM base AS builder
+# Build stage
+FROM node:20-alpine AS build
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+
+# Copy dependencies from previous stage
+COPY --from=dependencies /app/node_modules ./node_modules
+
+# Copy source code
 COPY . .
 
 # Environment variables for build
 ENV NODE_ENV=production
 ENV VITE_APP_ENV=production
 
-# Build the application
+# Clear npm cache and build the application
+RUN npm cache clean --force
 RUN npm run build
 
-# Production image, copy all the files and run next
-FROM nginx:alpine AS runner
-WORKDIR /app
+# Production stage
+FROM nginx:alpine
+WORKDIR /usr/share/nginx/html
 
 # Copy nginx configuration
-COPY --from=builder /app/nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy built application
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Copy built application from build stage
+COPY --from=build /app/dist .
 
 # Add labels for Coolify
 LABEL coolify.managed=true

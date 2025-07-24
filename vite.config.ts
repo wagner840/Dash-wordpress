@@ -14,6 +14,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    include: ['tailwindcss', 'autoprefixer'],
+    exclude: ['@asamuzakjp/css-color']
+  },
   server: {
     port: 5173,
     host: true,
@@ -27,6 +31,7 @@ export default defineConfig({
     },
   },
   build: {
+      chunkSizeWarningLimit: 1000,
       rollupOptions: {
         output: {
           /**
@@ -43,6 +48,12 @@ export default defineConfig({
             "router-vendor": ["react-router-dom"],
             // Utility libraries - rarely change
             "utils-vendor": ["axios", "date-fns", "zod"],
+            // UI libraries
+            "ui-vendor": ["@headlessui/react", "@heroicons/react"],
+            // Supabase
+            "supabase-vendor": ["@supabase/supabase-js"],
+            // WordPress client (separate chunk)
+            "wordpress": ["./src/lib/wordpress/client"],
           },
         },
       },

@@ -16,6 +16,9 @@
     "preview": "vite preview",
     "build:analyze": "npm run build && npx vite-bundle-analyzer"
   },
+  "overrides": {
+    "@asamuzakjp/css-color": "1.0.2"
+  },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
     "@heroicons/react": "^2.2.0",
