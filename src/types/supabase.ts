@@ -106,8 +106,8 @@ export const ContentPostSchema = z.object({
   content: z.string().min(1, 'Content is required'),
   status: z.enum(['draft', 'published', 'scheduled']),
   wordpress_post_id: z.number().optional(),
-  seo_data: z.record(z.unknown()),
-  performance_metrics: z.record(z.unknown()),
+  seo_data: z.record(z.string(), z.unknown()),
+  performance_metrics: z.record(z.string(), z.unknown()),
   created_at: z.string().datetime(),
   published_at: z.string().datetime().optional(),
 });
@@ -126,7 +126,7 @@ export const ProductionPipelineSchema = z.object({
   status: z.enum(['active', 'paused', 'error']),
   last_execution: z.string().datetime(),
   success_rate: z.number().min(0).max(1),
-  configuration: z.record(z.unknown()),
+  configuration: z.record(z.string(), z.unknown()),
 });
 
 /**

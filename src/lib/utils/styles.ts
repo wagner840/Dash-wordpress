@@ -4,7 +4,11 @@
  */
 
 import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+
+// Simple implementation while tailwind-merge is not available
+function twMerge(...classes: string[]): string {
+  return classes.filter(Boolean).join(' ');
+}
 
 /**
  * Combine and merge CSS class names using clsx and Tailwind merge.

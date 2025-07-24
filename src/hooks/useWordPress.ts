@@ -104,10 +104,16 @@ export function useWordPressPosts(
               if (statusFilter === 'any') return true;
               return post.status === statusFilter;
             });
-            allPosts = [...allPosts, ...filteredPosts];
+            allPosts = [...allPosts, ...filteredPosts.map(post => ({
+              ...post,
+              _links: post._links || { self: [], collection: [], about: [], author: [], replies: [], 'version-history': [], 'wp:attachment': [], 'wp:term': [], curies: [] }
+            }))];
             console.log(`Página ${page}: ${posts.length} posts total, ${filteredPosts.length} com status "${statusFilter}"`);
           } else {
-            allPosts = [...allPosts, ...posts];
+            allPosts = [...allPosts, ...posts.map(post => ({
+              ...post,
+              _links: post._links || { self: [], collection: [], about: [], author: [], replies: [], 'version-history': [], 'wp:attachment': [], 'wp:term': [], curies: [] }
+            }))];
             console.log(`Página ${page}: ${posts.length} posts com status "publish"`);
           }
           
@@ -162,7 +168,10 @@ export function useAllWordPressPosts(limit: number = 5) {
       ]);
 
       // Combinar e ordenar por data
-      const allPosts = [...optmilPosts, ...einsof7Posts];
+      const allPosts = [...optmilPosts, ...einsof7Posts].map(post => ({
+        ...post,
+        _links: post._links || { self: [], collection: [], about: [], author: [], replies: [], 'version-history': [], 'wp:attachment': [], 'wp:term': [], curies: [] }
+      }));
       return allPosts
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .slice(0, limit);

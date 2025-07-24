@@ -14,7 +14,8 @@ export type ButtonVariant =
   | 'secondary' 
   | 'outline' 
   | 'ghost' 
-  | 'danger';
+  | 'danger'
+  | 'default';
 
 /**
  * Button size types for different dimensions.
@@ -41,6 +42,8 @@ export interface ButtonProps {
   type?: 'button' | 'submit' | 'reset';
   /** Click handler for the button */
   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  /** Title attribute for the button */
+  title?: string;
 }
 
 /**
@@ -59,6 +62,7 @@ function getVariantStyles(variant: ButtonVariant): string {
     outline: 'border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:ring-gray-500',
     ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-gray-500',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm',
+    default: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500 shadow-sm',
   };
   
   return variants[variant];
@@ -113,6 +117,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       className,
       type = 'button',
       onClick,
+      title,
       ...props
     },
     ref
@@ -125,6 +130,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         type={type}
         disabled={isDisabled}
         onClick={onClick}
+        title={title}
         className={cn(
           // Base styles
           'inline-flex items-center justify-center rounded-lg font-medium transition-colors',

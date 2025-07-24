@@ -286,20 +286,20 @@ export function Blogs(): ReactElement {
               <div className="grid grid-cols-2 gap-4 pt-3 border-t border-gray-200">
                 <div className="text-center">
                   <p className="text-lg font-semibold text-blue-600">
-                    {formatNumber(blog.content_stats?.clusters?.total || 0, "pt-BR")}
+                    {formatNumber((blog.content_stats as any)?.clusters?.total || 0, "pt-BR")}
                   </p>
                   <p className="text-xs text-gray-600">Clusters</p>
                   <p className="text-xs text-green-600">
-                    {blog.content_stats?.clusters?.completed || 0} concluídos
+                    {(blog.content_stats as any)?.clusters?.completed || 0} concluídos
                   </p>
                 </div>
                 <div className="text-center">
                   <p className="text-lg font-semibold text-purple-600">
-                    {formatNumber(blog.content_stats?.categories?.total || 0, "pt-BR")}
+                    {formatNumber((blog.content_stats as any)?.categories?.total || 0, "pt-BR")}
                   </p>
                   <p className="text-xs text-gray-600">Categorias</p>
                   <p className="text-xs text-green-600">
-                    {blog.content_stats?.categories?.completed || 0} concluídas
+                    {(blog.content_stats as any)?.categories?.completed || 0} concluídas
                   </p>
                 </div>
               </div>
