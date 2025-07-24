@@ -16,7 +16,7 @@ APP_URL=https://sua-app.dominio.com
 
 1. **Login**: contatopawa@gmail.com / Monkeytube19126161!!!
 2. **New Project** → **Git Repository**
-3. **Repository**: `https://github.com/SEU_USER/PRPs-agentic-eng`
+3. **Repository**: `https://github.com/wagner840/Dash-wordpress`
 4. **Branch**: `development`
 5. **Build Command**: `npm install && npm run build`
 6. **Start Command**: `npm start`
@@ -54,7 +54,7 @@ Execute este script para configurar tudo automaticamente:
 
 COOLIFY_URL="http://31.97.170.218:8000"
 API_TOKEN="1|XCxiOrrdxYBJMaBSsEL7m3LlvUEQ9JmR99IhJ7hr9780b3eb"
-REPO_URL="https://github.com/SEU_USER/PRPs-agentic-eng"
+REPO_URL="https://github.com/wagner840/Dash-wordpress"
 
 # Criar projeto
 curl -X POST "$COOLIFY_URL/api/v1/projects" \
