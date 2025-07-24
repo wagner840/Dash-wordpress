@@ -9,7 +9,8 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 
 # Install all dependencies (including dev dependencies for build)
-RUN npm ci --ignore-scripts --prefer-offline --no-audit
+RUN rm -rf node_modules package-lock.json
+RUN npm install --ignore-scripts --no-audit
 
 # Build stage
 FROM node:20-alpine AS build

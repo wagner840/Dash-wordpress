@@ -16,7 +16,10 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['tailwindcss', 'autoprefixer'],
-    exclude: ['@asamuzakjp/css-color']
+    exclude: ['@asamuzakjp/css-color', 'jsdom', 'cssstyle']
+  },
+  define: {
+    global: 'globalThis',
   },
   server: {
     port: 5173,
