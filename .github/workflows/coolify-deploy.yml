@@ -1,0 +1,46 @@
+name: Deploy to Coolify
+
+on:
+  push:
+    branches: [ development, main ]
+  pull_request:
+    branches: [ development, main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Deploy to Coolify
+      run: |
+        curl --request GET "${{ secrets.COOLIFY_WEBHOOK }}" \
+          --header "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" \
+          --fail --silent --show-error
+      
+    - name: Notify deployment status
+      if: always()
+      run: |
+        if [ $? -eq 0 ]; then
+          echo "✅ Deploy realizado com sucesso!"
+        else
+          echo "❌ Falha no deploy"
+          exit 1
+        fi
+
+  health-check:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: success()
+    
+    steps:
+    - name: Wait for deployment
+      run: sleep 30
+      
+    - name: Health check
+      run: |
+        curl --fail --silent --show-error "${{ secrets.APP_URL }}/health" || \
+        curl --fail --silent --show-error "${{ secrets.APP_URL }}" || \
+        echo "⚠️ Health check failed - app may still be starting"

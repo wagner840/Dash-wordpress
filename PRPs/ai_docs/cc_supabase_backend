@@ -1,0 +1,340 @@
+Aprenda como funciona o backend do PAWA. 
+O audit log foi remmovido pois pesava muito no banco de dados.
+Outras alterações foram feitas, sera preciso busca na mcp do supabase para ver as alterações.
+
+
+
+Documentação Técnica Completa -
+Backend PAWA
+Visão Geral da Arquitetura
+O Backend PAWA é um sistema de banco de dados PostgreSQL avançado, otimizado para
+Supabase Cloud, que implementa funcionalidades de inteligência artificial para SEO e
+gestão de conteúdo. O sistema utiliza extensões modernas como pgvector para busca
+semântica e pgmq para processamento assíncrono.
+
+Estrutura de Tabelas
+Tabelas Principais
+1. blogs
+
+Propósito: Gerenciamento de múltiplos blogs/sites
+Campos principais:
+
+id (uuid): Identificador único
+name (text): Nome do blog (único)
+domain (text): Domínio do site
+niche (text): Nicho de mercado
+description (text): Descrição do blog
+is_active (boolean): Status ativo/inativo
+Índices:
+
+idx_blogs_niche: Otimiza consultas por nicho
+idx_blogs_is_active: Filtragem por status
+2. main_keywords
+Propósito: Repositório principal de palavras-chave estratégicas
+Campos principais:
+
+blog_id (uuid): Referência ao blog
+keyword (text): Palavra-chave principal
+msv (integer): Monthly Search Volume
+kw_difficulty (integer): Dificuldade de rankeamento (0-100)
+cpc (numeric): Custo por clique
+competition (text): Nível de competição (LOW/MEDIUM/HIGH)
+search_intent (text): Intenção de busca
+is_used (boolean): Indica se já foi utilizada
+Constraint única: (blog_id, keyword) - Evita duplicatas por blog
+
+3. keyword_variations
+
+Propósito: Variações e expansões das keywords principais
+Campos principais:
+
+main_keyword_id (uuid): Referência à keyword principal
+variation_type (text): Tipo de variação (related, suggestion, idea, autocomplete,
+subtopic, people_also_ask)
+embedding (vector(1536)): Representação vetorial para busca semântica
+Validações:
+
+variation_type limitado aos valores do DataForSEO
+competition limitado a LOW/MEDIUM/HIGH
+search_intent limitado aos 4 tipos padrão
+Tabelas de Conteúdo
+4. content_posts
+
+Propósito: Gestão completa de artigos e posts
+Campos principais:
+
+blog_id (uuid): Referência ao blog
+author_id (uuid): Referência ao autor
+title (text): Título do post
+slug (text): URL amigável
+content (text): Conteúdo completo
+focus_keyword (text): Palavra-chave de foco
+status (text): Status do post (draft/published/scheduled/archived)
+embedding (vector(1536)): Representação vetorial do conteúdo
+Constraint única: (blog_id, slug) - URLs únicas por blog
+
+5. post_meta, post_categories, post_tags
+
+Propósito: Metadados flexíveis e taxonomia
+
+Relacionamento many-to-many com posts
+Permite classificação multi-dimensional
+Suporte a SEO avançado
+Tabelas de Inteligência
+6. keyword_clusters
+
+Propósito: Agrupamentos inteligentes de keywords
+Campos principais:
+
+cluster_name (text): Nome do cluster
+main_keyword_ids (uuid[]): Array de IDs das keywords
+embedding (vector(1536)): Representação vetorial do cluster
+7. content_opportunities_*
+Propósito: Identificação automática de oportunidades de conteúdo
+
+content_opportunities_clusters: Baseadas em clusters
+content_opportunities_categories: Baseadas em categorias
+Incluem scoring automático de prioridade
+Tabelas de Suporte
+8. serp_results
+
+Propósito: Análise de concorrência SERP
+
+Mapeia resultados de busca para cada keyword
+Permite análise competitiva automática
+9. audit_log
+Propósito: Auditoria completa do sistema
+
+Registra todas as operações (INSERT/UPDATE/DELETE)
+Mantém histórico de mudanças
+Rastreabilidade completa
+Sistema de Índices
+Índices Básicos
+Otimização para consultas frequentes
+Cobertura de foreign keys
+Índices compostos para consultas complexas
+•
+•
+•
+Índices Vetoriais HNSW
+CREATEINDEX idx_keyword_variations_embedding
+ON keyword_variations
+USING hnsw(embeddingvector_cosine_ops)
+WITH (m= 16 ,ef_construction= 64 );
+Parâmetros otimizados:
+
+m = 16: Número de conexões bidirecionais
+ef_construction = 64: Tamanho da lista dinâmica durante construção
+vector_cosine_ops: Operador de distância coseno
+Índices de Texto Completo
+CREATEINDEX idx_content_posts_fulltext
+ON content_posts
+USING gin(to_tsvector('portuguese',title||' '||content));
+Funções Principais
+Funções de Scoring
+calculate_keyword_opportunity_score()
+
+Propósito: Algoritmo proprietário de scoring de oportunidades
+Parâmetros:
+
+msv (integer): Volume de busca mensal
+kw_difficulty (integer): Dificuldade de rankeamento
+cpc (numeric): Custo por clique
+competition (varchar): Nível de competição
+search_intent (varchar): Intenção de busca
+Algoritmo:
+
+MSV Score (0-40 pontos): Baseado em faixas de volume
+Difficulty Score (0-25 pontos): Invertido (menor dificuldade = maior score)
+CPC Score (0-15 pontos): Valor comercial
+Competition Score (0-10 pontos): LOW=10, MEDIUM=5, HIGH=
+Intent Score (0-10 pontos): Transactional/Commercial=
+Retorno: Score de 0-100 indicando potencial da oportunidade
+
+Funções de Busca Semântica
+find_similar_keywords()
+
+SELECT * FROM find_similar_keywords(
+query_embedding,
+match_threshold:= 0. 8 ,
+match_count:= 10
+);
+Algoritmo: Utiliza distância coseno para encontrar keywords semanticamente similares
+
+hybrid_search_posts()
+
+Propósito: Busca híbrida combinando texto e semântica
+Algoritmo:
+
+Busca textual usando to_tsvector e plainto_tsquery
+Busca semântica usando distância vetorial
+Combinação ponderada: 60% semântica + 40% textual
+Funções de Análise
+analyze_content_gaps()
+
+Propósito: Identifica oportunidades de conteúdo não exploradas
+Critérios:
+
+Keywords sem conteúdo associado
+Baixa similaridade com conteúdo existente
+Alto score de oportunidade
+detect_semantic_duplicates()
+
+Propósito: Evita canibalização de conteúdo
+Threshold padrão: 95% de similaridade semântica
+
+Funções de Conteúdo para Embeddings
+keyword_variation_content()
+
+CREATEFUNCTION keyword_variation_content(input_recordjsonb)
+RETURNS text
+Propósito: Extrai texto relevante para geração de embeddings
+Estratégia: Combina keyword + tipo + intenção + competição
+
+Sistema de Triggers
+Triggers de Timestamp
+Função: update_updated_at_column()
+Aplicação: Todas as tabelas principais
+Propósito: Manutenção automática de timestamps
+
+Triggers de Validação
+validate_keyword_variations()
+
+Validações:
+
+Normalização de keyword (lowercase, trim)
+Validação de ranges de MSV e CPC
+Alertas para valores suspeitos
+validate_post_categories/tags()
+
+Validações:
+
+Normalização de nomes
+Verificação de campos obrigatórios
+Triggers de Negócio
+mark_keyword_as_used()
+
+Trigger: Após INSERT/UPDATE em content_posts
+Ação: Marca keyword como utilizada quando definida como focus_keyword
+
+delete_related_data()
+
+Trigger: Antes de DELETE
+Ação: Limpeza em cascata de dados relacionados
+
+Triggers de Auditoria
+Função: audit_trigger_function()
+Aplicação: Tabelas críticas
+Registro: Operação, valores antigos/novos, timestamp
+
+Views de Dashboard
+executive_dashboard
+Propósito: Visão executiva consolidada por blog
+Métricas:
+
+Total de keywords e posts
+Taxa de utilização de keywords
+Médias de MSV, dificuldade e CPC
+Oportunidades pendentes
+keyword_opportunities
+Propósito: Ranking de oportunidades por score
+Ordenação: Score de oportunidade DESC, MSV DESC
+Filtros: Blog ativo, keywords não utilizadas
+
+serp_competition_analysis
+Propósito: Análise competitiva automática
+Métricas:
+
+Domínios únicos por keyword
+Distribuição de posições
+Oportunidades de ranking
+production_pipeline
+Propósito: Monitoramento de produção de conteúdo
+Agrupamento: Por blog e status
+Métricas: Contagem, completude, tamanho médio
+
+Monitoramento e Manutenção
+Funções de Diagnóstico
+check_embeddings_stats()
+
+Retorna: Estatísticas de completude de embeddings por tabela
+Uso: Monitoramento de saúde do sistema de IA
+
+check_vector_indexes_status()
+
+Retorna: Status e tamanho dos índices vetoriais
+Uso: Otimização de performance
+
+Comandos de Verificação
+-- Verificar tabelas criadas
+SELECTtable_nameFROM information_schema.tables
+WHERE table_schema='public' ORDERBYtable_name ;
+-- Verificar índices
+SELECT indexname,tablename FROM pg_indexes
+WHERE schemaname='public' ORDERBY tablename;
+-- Verificar funções
+SELECTroutine_nameFROM information_schema.routines
+WHEREroutine_schema ='public' ORDERBYroutine_name ;
+Considerações de Performance
+Otimizações Implementadas
+Índices HNSW para busca vetorial ultrarrápida
+Índices compostos para consultas complexas
+Particionamento lógico por blog_id
+Índices de texto completo para busca textual
+Métricas de Performance Esperadas
+Busca semântica: < 50ms para 1M+ registros
+Consultas de dashboard: < 100ms
+Inserção com triggers: < 10ms
+Geração de embeddings: Assíncrona via fila
+Segurança e Compliance
+Controles de Acesso
+Row Level Security (RLS) por blog_id
+Funções SECURITY DEFINER para operações privilegiadas
+Vault integration para secrets
+1.
+2.
+3.
+4.
+• • • • • • •
+Auditoria
+Registro completo de todas as operações
+Rastreabilidade de mudanças
+Retenção configurável de logs
+Backup e Recovery
+Point-in-time recovery via Supabase
+Backup automático de embeddings
+Disaster recovery testado
+Integração com Sistemas Externos
+APIs Suportadas
+OpenAI Embeddings API para geração de vetores
+DataForSEO API para métricas de keywords
+Webhook endpoints para notificações
+Formato de Dados
+JSON/JSONB para flexibilidade
+UUID para identificadores únicos
+Timestamptz para precisão temporal
+Roadmap Técnico
+Próximas Implementações
+Machine Learning para previsão de tendências
+GraphQL para APIs mais eficientes
+Real-time subscriptions para updates live
+Advanced analytics com time-series data
+Otimizações Planejadas
+Particionamento temporal para audit_log
+Materialized views para dashboards complexos
+Connection pooling otimizado
+Cache layers para consultas frequentes
+• • • • • • • • • • • •
+1.
+2.
+3.
+4.
+1.
+2.
+3.
+4.
+Autor: Manus AI
+
+Versão: 1.
+
+Data: Dezembro 2024
