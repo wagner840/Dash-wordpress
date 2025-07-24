@@ -67,8 +67,8 @@ export function WordPressFilters({
             <option value="draft">Rascunhos</option>
             <option value="private">Privados</option>
             <option value="future">Agendados</option>
-            {supportedStatuses?.map((status) => (
-              <option key={status.slug} value={status.slug}>
+            {supportedStatuses?.map((status, index) => (
+              <option key={`${status.slug}-${index}`} value={status.slug}>
                 {status.name}
               </option>
             ))}
