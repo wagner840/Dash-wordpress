@@ -15,8 +15,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['tailwindcss', 'autoprefixer'],
-    exclude: ['@asamuzakjp/css-color', 'jsdom', 'cssstyle']
+    include: ['tailwindcss', 'autoprefixer']
   },
   define: {
     global: 'globalThis',
