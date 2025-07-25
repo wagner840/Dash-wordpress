@@ -8,9 +8,10 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Force clean install without problematic dependencies
-RUN rm -rf node_modules package-lock.json
-RUN npm install --legacy-peer-deps --ignore-scripts --no-audit
+# Force completely clean install 
+RUN rm -rf node_modules package-lock.json yarn.lock pnpm-lock.yaml
+RUN npm cache clean --force
+RUN npm install --no-package-lock --legacy-peer-deps --ignore-scripts --no-audit
 
 # Build stage
 FROM node:20-alpine AS build
