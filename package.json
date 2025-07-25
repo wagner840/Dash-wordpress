@@ -3,6 +3,15 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0 <21.0.0",
+    "npm": ">=8.0.0"
+  },
+  "overrides": {
+    "cssstyle": "4.1.0",
+    "@asamuzakjp/css-color": false,
+    "lru-cache": "10.4.3"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

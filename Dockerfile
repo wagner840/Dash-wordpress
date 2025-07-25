@@ -1,5 +1,5 @@
 # WordPress SaaS Dashboard - Production Dockerfile
-FROM node:20-alpine AS dependencies
+FROM node:18-alpine AS dependencies
 
 # Install system dependencies
 RUN apk add --no-cache libc6-compat
@@ -14,7 +14,7 @@ RUN npm cache clean --force
 RUN npm install --no-package-lock --legacy-peer-deps --ignore-scripts --no-audit
 
 # Build stage
-FROM node:20-alpine AS build
+FROM node:18-alpine AS build
 WORKDIR /app
 
 # Copy dependencies from previous stage
