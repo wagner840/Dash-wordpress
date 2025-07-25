@@ -7,6 +7,10 @@
     "node": ">=20.0.0",
     "npm": ">=8.0.0"
   },
+  "overrides": {
+    "@asamuzakjp/css-color": "3.1.4",
+    "cssstyle": "3.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
