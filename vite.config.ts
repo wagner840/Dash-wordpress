@@ -14,9 +14,6 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  optimizeDeps: {
-    include: ['tailwindcss', 'autoprefixer']
-  },
   define: {
     global: 'globalThis',
   },
