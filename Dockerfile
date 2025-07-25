@@ -10,17 +10,11 @@ WORKDIR /app
 # Copy package files first (for better caching)
 COPY package.json ./
 
-# Install ALL dependencies and fix broken css-color package
+# Install dependencies and block problematic packages
 RUN npm install --legacy-peer-deps --no-audit
 
-# Fix broken @asamuzakjp/css-color package by replacing with working version
-RUN rm -rf node_modules/@asamuzakjp/css-color
-RUN npm install @asamuzakjp/css-color@3.1.4 --force --no-audit
-RUN if [ ! -f "node_modules/@asamuzakjp/css-color/src/index.ts" ]; then \
-    echo "Creating missing index.ts file..."; \
-    mkdir -p node_modules/@asamuzakjp/css-color/src; \
-    echo "export default {};" > node_modules/@asamuzakjp/css-color/src/index.ts; \
-    fi
+# Ensure problematic packages are completely removed
+RUN rm -rf node_modules/@asamuzakjp node_modules/cssstyle node_modules/jsdom
 
 # Copy source code AFTER installing dependencies
 COPY . .
