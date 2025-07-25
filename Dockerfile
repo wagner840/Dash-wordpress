@@ -1,45 +1,36 @@
 # WordPress SaaS Dashboard - Production Dockerfile
-FROM node:18-alpine AS dependencies
+FROM node:20-alpine AS build
 
 # Install system dependencies
 RUN apk add --no-cache libc6-compat
+
+# Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json* ./
+# Copy package files first (for better caching)
+COPY package.json ./
 
-# Force completely clean install 
-RUN rm -rf node_modules package-lock.json yarn.lock pnpm-lock.yaml
-RUN npm cache clean --force
-RUN npm install --no-package-lock --legacy-peer-deps --ignore-scripts --no-audit
+# Install ALL dependencies
+RUN npm install --legacy-peer-deps --no-audit
 
-# Build stage
-FROM node:18-alpine AS build
-WORKDIR /app
-
-# Copy dependencies from previous stage
-COPY --from=dependencies /app/node_modules ./node_modules
-
-# Copy source code
+# Copy source code AFTER installing dependencies
 COPY . .
 
 # Environment variables for build
 ENV NODE_ENV=production
 ENV VITE_APP_ENV=production
 
-# Clear npm cache and build the application
-RUN npm cache clean --force
+# Build the application
 RUN npm run build
 
-# Production stage
+# Production stage with nginx
 FROM nginx:alpine
-WORKDIR /usr/share/nginx/html
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy built application from build stage
-COPY --from=build /app/dist .
+COPY --from=build /app/dist /usr/share/nginx/html
 
 # Add labels for Coolify
 LABEL coolify.managed=true
