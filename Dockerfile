@@ -10,11 +10,17 @@ WORKDIR /app
 # Copy package files first (for better caching)
 COPY package.json ./
 
-# Install dependencies and block problematic packages
+# Copy destroy script first
+COPY scripts/destroy-css-color.js ./scripts/
+
+# Install dependencies and DESTROY problematic packages
 RUN npm install --legacy-peer-deps --no-audit
 
-# Ensure problematic packages are completely removed
-RUN rm -rf node_modules/@asamuzakjp node_modules/cssstyle node_modules/jsdom
+# NUCLEAR OPTION: Manual destruction of problematic packages
+RUN node scripts/destroy-css-color.js
+
+# Verify they're gone
+RUN ls -la node_modules/ | grep -E "(asamuzakjp|cssstyle|jsdom)" || echo "✅ All problematic packages destroyed!"
 
 # Copy source code AFTER installing dependencies
 COPY . .

@@ -9,13 +9,16 @@
   },
   "overrides": {
     "@asamuzakjp/css-color": false,
+    "@asamuzakjp/*": false,
     "cssstyle": false,
-    "jsdom": false
+    "jsdom": false,
+    "happy-dom": false
   },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "node scripts/destroy-css-color.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
